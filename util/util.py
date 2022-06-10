@@ -68,7 +68,7 @@ def tensor2im(image_tensor, imtype=np.uint8, normalize=True, tile=False):
             image_numpy.append(tensor2im(image_tensor[i], imtype, normalize))
         return image_numpy
 
-    if image_tensor.dim() == 4:
+    if image_tensor.ndim == 4:
         # transform each image in the batch
         images_np = []
         for b in range(image_tensor.size(0)):
@@ -82,9 +82,9 @@ def tensor2im(image_tensor, imtype=np.uint8, normalize=True, tile=False):
         else:
             return images_np
 
-    if image_tensor.dim() == 2:
+    if image_tensor.ndim == 2:
         image_tensor = image_tensor.unsqueeze(0)
-    image_numpy = image_tensor.detach().cpu().float().numpy()
+    image_numpy = image_tensor.detach().numpy()
     if normalize:
         image_numpy = (np.transpose(image_numpy, (1, 2, 0)) + 1) / 2.0 * 255.0
     else:
@@ -97,7 +97,7 @@ def tensor2im(image_tensor, imtype=np.uint8, normalize=True, tile=False):
 
 # Converts a one-hot tensor into a colorful label map
 def tensor2label(label_tensor, n_label, imtype=np.uint8, tile=False):
-    if label_tensor.dim() == 4:
+    if label_tensor.ndim == 4:
         # transform each image in the batch
         images_np = []
         for b in range(label_tensor.size(0)):
@@ -112,11 +112,11 @@ def tensor2label(label_tensor, n_label, imtype=np.uint8, tile=False):
             images_np = images_np[0]
             return images_np
 
-    if label_tensor.dim() == 1:
+    if label_tensor.ndim == 1:
         return np.zeros((64, 64, 3), dtype=np.uint8)
     if n_label == 0:
         return tensor2im(label_tensor, imtype)
-    label_tensor = label_tensor.cpu().float()
+    # label_tensor = label_tensor.cpu().float()
     if label_tensor.size()[0] > 1:
         label_tensor = label_tensor.max(0, keepdim=True)[1]
     label_tensor = Colorize(n_label)(label_tensor)
@@ -135,7 +135,7 @@ def save_image(image_numpy, image_path, create_dir=False):
     image_pil = Image.fromarray(image_numpy)
 
     # save to png
-    image_pil.save(image_path.replace('.jpg', '.png'))
+    image_pil.save(image_path.replace('.png', '.jpg'))
 
 
 def mkdirs(paths):
@@ -266,11 +266,11 @@ class Colorize(object):
 
     def __call__(self, gray_image):
         size = gray_image.size()
-        color_image = jt.zeros(3, size[1], size[2])
+        color_image = jt.zeros(shape=(3, size[1], size[2]))
         color_image = jt.bool(color_image)
 
         for label in range(0, len(self.cmap)):
-            mask = (label == gray_image[0]).cpu()
+            mask = (label == gray_image[0])
             color_image[0][mask] = self.cmap[label][0]
             color_image[1][mask] = self.cmap[label][1]
             color_image[2][mask] = self.cmap[label][2]

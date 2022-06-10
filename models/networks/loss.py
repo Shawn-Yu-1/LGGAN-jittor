@@ -38,19 +38,19 @@ class GANLoss(nn.Module):
     def get_target_tensor(self, input, target_is_real):
         if target_is_real:
             if self.real_label_tensor is None:
-                self.real_label_tensor = jt.float32(1).fill_(self.real_label)
-                self.real_label_tensor.requires_grad_(False)
+                self.real_label_tensor = jt.float32(self.real_label)
+                # self.real_label_tensor.requires_grad_(False)
             return self.real_label_tensor.expand_as(input)
         else:
             if self.fake_label_tensor is None:
-                self.fake_label_tensor = jt.float32(1).fill_(self.fake_label)
-                self.fake_label_tensor.requires_grad_(False)
+                self.fake_label_tensor = jt.float32(self.fake_label)
+                # self.fake_label_tensor.requires_grad_(False)
             return self.fake_label_tensor.expand_as(input)
 
     def get_zero_tensor(self, input):
         if self.zero_tensor is None:
-            self.zero_tensor = jt.float32(1).fill_(0)
-            self.zero_tensor.requires_grad_(False)
+            self.zero_tensor = jt.float32(0)
+            # self.zero_tensor.requires_grad_(False)
         return self.zero_tensor.expand_as(input)
 
     def loss(self, input, target_is_real, for_discriminator=True):
@@ -64,11 +64,13 @@ class GANLoss(nn.Module):
         elif self.gan_mode == 'hinge':
             if for_discriminator:
                 if target_is_real:
-                    minval = jt.min(input - 1, self.get_zero_tensor(input))
-                    loss = -jt.mean(minval)
+                    minval = nn.relu(-input+1)
+                    # minval = jt.min(input - 1, self.get_zero_tensor(input))
+                    loss = -jt.mean(-minval)
                 else:
-                    minval = jt.min(-input - 1, self.get_zero_tensor(input))
-                    loss = -jt.mean(minval)
+                    minval = nn.relu(input+1)
+                    # minval = jt.min(-input - 1, self.get_zero_tensor(input))
+                    loss = -jt.mean(-minval)
             else:
                 assert target_is_real, "The generator's hinge loss must be aiming for real"
                 loss = -jt.mean(input)
@@ -101,11 +103,11 @@ class GANLoss(nn.Module):
 class VGGLoss(nn.Module):
     def __init__(self, gpu_ids):
         super(VGGLoss, self).__init__()
-        self.vgg = VGG19().cuda()
+        self.vgg = VGG19()
         self.criterion = nn.L1Loss()
         self.weights = [1.0 / 32, 1.0 / 16, 1.0 / 8, 1.0 / 4, 1.0]
 
-    def forward(self, x, y):
+    def execute(self, x, y):
         x_vgg, y_vgg = self.vgg(x), self.vgg(y)
         loss = 0
         for i in range(len(x_vgg)):

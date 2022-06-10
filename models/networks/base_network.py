@@ -31,18 +31,18 @@ class BaseNetwork(nn.Module):
             classname = m.__class__.__name__
             if classname.find('BatchNorm2d') != -1:
                 if hasattr(m, 'weight') and m.weight is not None:
-                    init.gauss_(m.weight.data, 1.0, gain)
+                    init.gauss_(m.weight, 1.0, gain)
                 if hasattr(m, 'bias') and m.bias is not None:
                     init.constant_(m.bias.data, 0.0)
             elif hasattr(m, 'weight') and (classname.find('Conv') != -1 or classname.find('Linear') != -1):
                 if init_type == 'normal':
-                    init.gauss_(m.weight.data, 0.0, gain)
+                    init.gauss_(m.weight, 0.0, gain)
                 elif init_type == 'xavier':
-                    init.xavier_gauss_(m.weight.data, gain=gain)
+                    init.xavier_gauss_(m.weight, gain=gain)
                 elif init_type == 'xavier_uniform':
-                    init.xavier_uniform_(m.weight.data, gain=1.0)
+                    init.xavier_uniform_(m.weight, gain=1.0)
                 elif init_type == 'kaiming':
-                    init.kaiming_normal_(m.weight.data, a=0, mode='fan_in')
+                    init.kaiming_normal_(m.weight, a=0, mode='fan_in')
                 # elif init_type == 'orthogonal':
                 #     init.orthogonal_(m.weight.data, gain=gain)
                 elif init_type == 'none':  # uses pytorch's default init method
@@ -50,7 +50,7 @@ class BaseNetwork(nn.Module):
                 else:
                     raise NotImplementedError('initialization method [%s] is not implemented' % init_type)
                 if hasattr(m, 'bias') and m.bias is not None:
-                    init.constant_(m.bias.data, 0.0)
+                    init.constant_(m.bias, 0.0)
 
         self.apply(init_func)
 

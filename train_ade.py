@@ -20,8 +20,14 @@ jt.flags.use_cuda = (jt.has_cuda and opt.gpu_ids != "-1")
 print(' '.join(sys.argv))
 
 # load the dataset
-dataloader = data.create_dataloader(opt)
+dataset = data.create_dataloader(opt)
 
+dataloader = dataset().set_attrs(batch_size=opt.batchSize,
+        shuffle=not opt.serial_batches,
+        num_workers=int(opt.nThreads),
+        drop_last=opt.isTrain)
+
+dataloader.initialize(opt)
 # create trainer for our model
 trainer = Pix2PixTrainer(opt)
 

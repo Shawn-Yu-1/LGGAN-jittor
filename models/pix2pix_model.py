@@ -17,7 +17,7 @@ class Pix2PixModel(jt.nn.Module):
     def __init__(self, opt):
         super().__init__()
         self.opt = opt
-        # self.FloatTensor = jt.Float
+        # self.FloatTensor = jt.float32
         # self.ByteTensor = torch.cuda.ByteTensor if self.use_gpu() \
         #     else torch.ByteTensor
 
@@ -28,7 +28,7 @@ class Pix2PixModel(jt.nn.Module):
             self.criterionGAN = networks.GANLoss(opt.gan_mode, opt=self.opt)
             self.criterionFeat = jt.nn.L1Loss()
             self.criterionL1 = jt.nn.L1Loss()
-            self.criterionCE = jt.nn.CrossEntropyLoss(reduction='none')
+            self.criterionCE = jt.nn.cross_entropy_loss
             if not opt.no_vgg_loss:
                 self.criterionVGG = networks.VGGLoss(self.opt.gpu_ids)
             if opt.use_vae:
@@ -136,8 +136,8 @@ class Pix2PixModel(jt.nn.Module):
         bs, _, h, w = label_map.size()
         nc = self.opt.label_nc + 1 if self.opt.contain_dontcare_label \
             else self.opt.label_nc
-        input_label = jt.float32(bs, nc, h, w).zero_() # print(input_label.size()) [1, 35, 256, 512]
-        input_semantics = input_label.scatter_(1, label_map, 1.0) # print(input_semantics.size()) [1, 35, 256, 512]
+        input_label = jt.zeros(shape=(bs, nc, h, w)) # print(input_label.size()) [1, 35, 256, 512]
+        input_semantics = input_label.scatter_(1, label_map, jt.array(1.0)) # print(input_semantics.size()) [1, 35, 256, 512]
 
         # concatenate instance map if it exists
         if not self.opt.no_instance:
@@ -170,7 +170,7 @@ class Pix2PixModel(jt.nn.Module):
         if not self.opt.no_ganFeat_loss:
             num_D = len(pred_fake_generated) # print(num_D) 2
 
-            GAN_Feat_loss = self.FloatTensor(1).fill_(0)
+            GAN_Feat_loss = jt.float32(0)
             for i in range(num_D):  # for each discriminator, last output is the final prediction, so we exclude it
                 num_intermediate_outputs = len(pred_fake_generated[i]) - 1
                 for j in range(num_intermediate_outputs):  # for each layer output
@@ -197,7 +197,7 @@ class Pix2PixModel(jt.nn.Module):
             # print(torch.sum(self.criterionCE(feature_score, target) * index))
             # print(torch.sum(index))
             # print(torch.sum(self.criterionCE(feature_score, target) * index)/torch.sum(index))
-            G_losses['class'] = jt.sum(self.criterionCE(feature_score, target) * index) / jt.sum(index) * self.opt.lambda_class
+            G_losses['class'] = jt.sum(self.criterionCE(feature_score, target, reduction='none') * index) / jt.sum(index) * self.opt.lambda_class
         # print(self.criterionCE(feature_score, target).size())
 
         # TO DO: local pixel loss
@@ -278,8 +278,8 @@ class Pix2PixModel(jt.nn.Module):
                result_11 ,result_12 , result_13 , result_14 , result_15 , result_16 , result_17 , result_18 , result_19 , result_20, \
                result_21 , result_22 , result_23 , result_24 , result_25 , result_26 , result_27 , result_28 ,  \
                feature_score, target, valid_index, attention_global, attention_local, _ = self.generate_fake(input_semantics, real_image)
-            fake_image = fake_image.detach()
-            fake_image.requires_grad_()
+            # fake_image = fake_image.detach()
+            # fake_image.requires_grad()
 
         pred_fake_generated, pred_real_generated = self.discriminate(input_semantics, fake_image, real_image)
         pred_fake_global, pred_real_global = self.discriminate(input_semantics, result_global, real_image)

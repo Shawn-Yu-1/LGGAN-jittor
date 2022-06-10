@@ -21,19 +21,19 @@ class CustomDataset(Pix2pixDataset):
         load_size = 286 if is_train else 256
         parser.set_defaults(load_size=load_size)
         # crop_size = 256 if is_train else 512
-        parser.set_defaults(crop_size=512)
-        parser.set_defaults(crop_h=384)
+        parser.set_defaults(crop_size=256)
+        parser.set_defaults(crop_h=192)
         parser.set_defaults(display_winsize=512)
         parser.set_defaults(label_nc=29)
         parser.set_defaults(contain_dontcare_label=False)
         if is_train:
-            label_dir = '../jittor_landscape_200k/train/labels'
+            label_dir = '../train/labels'
         else:
             label_dir = '../jittor_landscape_200k/val/labels'
         parser.add_argument('--label_dir', type=str, default=label_dir,
                             help='path to the directory that contains label images')
         if is_train:
-            parser.add_argument('--image_dir', type=str, default='../jittor_landscape_200k/train/imgs',
+            parser.add_argument('--image_dir', type=str, default='../train/imgs',
                                 help='path to the directory that contains photo images')
         else:
             parser.add_argument('--image_dir', type=str, default=label_dir,

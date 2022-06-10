@@ -7,7 +7,7 @@ import jittor.models as model
 import jittor.nn as nn
 # import torch.nn.functional as F
 # import torchvision
-import networks.spectral_norm as sp
+import models.networks.spectral_norm as sp
 from models.networks.normalization import SPADE
 
 
@@ -48,7 +48,7 @@ class SPADEResnetBlock(nn.Module):
 
     # note the resnet block with SPADE also takes in |seg|,
     # the semantic segmentation map as input
-    def forward(self, x, seg):
+    def execute(self, x, seg):
         x_s = self.shortcut(x, seg)
 
         dx = self.conv_0(self.actvn(self.norm_0(x, seg)))

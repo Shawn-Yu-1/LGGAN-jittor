@@ -4,6 +4,7 @@ Licensed under the CC BY-NC-SA 4.0 license (https://creativecommons.org/licenses
 """
 
 import jittor as jt
+from jittor import init
 import jittor.nn as nn
 # import torch.nn.functional as F
 from models.networks.base_network import BaseNetwork
@@ -20,7 +21,7 @@ def if_all_zero(tensor):
 class LGGANGenerator(BaseNetwork):
     @staticmethod
     def modify_commandline_options(parser, is_train):
-        parser.set_defaults(norm_G='spectralspadesyncbatch3x3')
+        parser.set_defaults(norm_G='spectralspadeinstance3x3')
         parser.add_argument('--num_upsampling_layers',
                             choices=('normal', 'more', 'most'), default='normal',
                             help="If 'more', adds upsampling layer between the two middle resnet blocks. If 'most', also add one more upsampling + resnet layer at the end of the generator")
@@ -153,9 +154,9 @@ class LGGANGenerator(BaseNetwork):
         # self.resnet_blocks10_28 = resnet_block_2(64,3,1,1)
         # self.resnet_blocks10_28.weight_init(0, 0.02)
 
-        self.deconv3_local = nn.ConvTranspose2d(256, 128, 3, 2, 1, 1)
+        self.deconv3_local = nn.ConvTranspose(256, 128, 3, 2, 1, 1)
         self.deconv3_norm_local = nn.InstanceNorm2d(128)
-        self.deconv4_local = nn.ConvTranspose2d(128, 64, 3, 2, 1, 1)
+        self.deconv4_local = nn.ConvTranspose(128, 64, 3, 2, 1, 1)
         self.deconv4_norm_local = nn.InstanceNorm2d(64)
 
         self.deconv9 = nn.Conv2d(3*29, 3, 3, 1, 1)
@@ -200,9 +201,9 @@ class LGGANGenerator(BaseNetwork):
         # self.fc1 = nn.Linear(64*256 * 512, 512)
         self.fc2 = nn.Linear(64, 29)
 
-        self.deconv3_attention = nn.ConvTranspose2d(256, 128, 3, 2, 1, 1)
+        self.deconv3_attention = nn.ConvTranspose(256, 128, 3, 2, 1, 1)
         self.deconv3_norm_attention = nn.InstanceNorm2d(128)
-        self.deconv4_attention = nn.ConvTranspose2d(128, 64, 3, 2, 1, 1)
+        self.deconv4_attention = nn.ConvTranspose(128, 64, 3, 2, 1, 1)
         self.deconv4_norm_attention = nn.InstanceNorm2d(64)
         self.deconv5_attention = nn.Conv2d(64, 2, 1, 1, 0)
 
@@ -218,7 +219,7 @@ class LGGANGenerator(BaseNetwork):
                              opt.num_upsampling_layers)
 
         sw = opt.crop_size // (2 ** num_up_layers)
-        sh = sw #opt.crop_h // (2 ** num_up_layers)
+        sh = opt.crop_h // (2 ** num_up_layers)
 
         return sw, sh
 
@@ -528,7 +529,7 @@ class resnet_block(nn.Module):
     # weight_init
     def weight_init(self, mean, std):
         for m in self._modules:
-            normal_init(self._modules[m], mean, std)
+            init.gauss_(self._modules[m].weight, mean, std)
 
     def execute(self, input):
         x = nn.pad(input, (self.padding, self.padding, self.padding, self.padding), 'reflect')
@@ -564,7 +565,7 @@ class resnet_block_2(nn.Module):
 
 
 def normal_init(m, mean, std):
-    if isinstance(m, nn.ConvTranspose2d) or isinstance(m, nn.Conv2d):
+    if isinstance(m, nn.ConvTranspose) or isinstance(m, nn.Conv2d):
         m.weight.data.normal_(mean, std)
         m.bias.data.zero_()
 
@@ -572,7 +573,7 @@ def normal_init(m, mean, std):
 class SPADEGenerator(BaseNetwork):
     @staticmethod
     def modify_commandline_options(parser, is_train):
-        parser.set_defaults(norm_G='spectralspadesyncbatch3x3')
+        parser.set_defaults(norm_G='spectralspadeinstance3x3')
         parser.add_argument('--num_upsampling_layers',
                             choices=('normal', 'more', 'most'), default='normal',
                             help="If 'more', adds upsampling layer between the two middle resnet blocks. If 'most', also add one more upsampling + resnet layer at the end of the generator")
