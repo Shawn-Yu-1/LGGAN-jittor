@@ -193,7 +193,7 @@ def find_class_in_module(target_cls_name, module):
 
 
 def save_network(net, label, epoch, opt):
-    save_filename = '%s_net_%s.pth' % (epoch, label)
+    save_filename = '%s_net_%s.pkl' % (epoch, label)
     save_path = os.path.join(opt.checkpoints_dir, opt.name, save_filename)
     jt.save(net.state_dict(), save_path)
     # if len(opt.gpu_ids) and jt.cuda.is_available():
