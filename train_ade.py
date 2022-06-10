@@ -28,6 +28,7 @@ dataloader = dataset().set_attrs(batch_size=opt.batchSize,
         drop_last=opt.isTrain)
 
 dataloader.initialize(opt)
+print("the Dataset is contain %d labels" %(len(dataloader)))
 # create trainer for our model
 trainer = Pix2PixTrainer(opt)
 

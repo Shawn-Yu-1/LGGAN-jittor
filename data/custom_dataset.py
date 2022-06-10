@@ -16,13 +16,14 @@ class CustomDataset(Pix2pixDataset):
     @staticmethod
     def modify_commandline_options(parser, is_train):
         parser = Pix2pixDataset.modify_commandline_options(parser, is_train)
-        # per_mode = 'resize_and_crop' if is_train else "fixed"
-        parser.set_defaults(preprocess_mode='fixed')
-        load_size = 286 if is_train else 256
+        per_mode = 'resize_and_crop' if is_train else "fixed"
+        parser.set_defaults(preprocess_mode=per_mode)
+        load_size = 560 if is_train else 256
         parser.set_defaults(load_size=load_size)
+        parser.set_defaults(load_h=420)
         # crop_size = 256 if is_train else 512
-        parser.set_defaults(crop_size=256)
-        parser.set_defaults(crop_h=192)
+        parser.set_defaults(crop_size=512)
+        parser.set_defaults(crop_h=384)
         parser.set_defaults(display_winsize=512)
         parser.set_defaults(label_nc=29)
         parser.set_defaults(contain_dontcare_label=False)

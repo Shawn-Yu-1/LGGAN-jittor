@@ -27,7 +27,8 @@ def get_params(opt, size):
     new_h = h
     new_w = w
     if opt.preprocess_mode == 'resize_and_crop':
-        new_h = new_w = opt.load_size
+        new_h = opt.load_h
+        new_w = opt.load_size
     elif opt.preprocess_mode == 'scale_width_and_crop':
         new_w = opt.load_size
         new_h = opt.load_size * h // w
@@ -48,14 +49,14 @@ def get_transform(opt, params, method=Image.BICUBIC, normalize=True, toTensor=Tr
     transform_list = []
     if 'resize' in opt.preprocess_mode:
         osize = [opt.load_size, opt.load_size]
-        transform_list.append(transforms.Resize(osize, interpolation=method))
+        transform_list.append(transforms.Resize(osize, mode=method))
     elif 'scale_width' in opt.preprocess_mode:
         transform_list.append(transforms.Lambda(lambda img: __scale_width(img, opt.load_size, method)))
     elif 'scale_shortside' in opt.preprocess_mode:
         transform_list.append(transforms.Lambda(lambda img: __scale_shortside(img, opt.load_size, method)))
 
     if 'crop' in opt.preprocess_mode:
-        transform_list.append(transforms.Lambda(lambda img: __crop(img, params['crop_pos'], opt.crop_size)))
+        transform_list.append(transforms.Lambda(lambda img: __crop(img, params['crop_pos'], opt)))
 
     if opt.preprocess_mode == 'none':
         base = 32
@@ -114,10 +115,12 @@ def __scale_shortside(img, target_width, method=Image.BICUBIC):
     return img.resize((nw, nh), method)
 
 
-def __crop(img, pos, size):
+def __crop(img, pos, opt):
     ow, oh = img.size
     x1, y1 = pos
-    tw = th = size
+    tw = opt.crop_size
+    th = opt.crop_h
+
     return img.crop((x1, y1, x1 + tw, y1 + th))
 
 

@@ -16,6 +16,13 @@ from util import html
 opt = TestOptions().parse()
 
 dataloader = data.create_dataloader(opt)
+dataloader = dataset().set_attrs(batch_size=opt.batchSize,
+        shuffle=not opt.serial_batches,
+        num_workers=int(opt.nThreads),
+        drop_last=opt.isTrain)
+
+dataloader.initialize(opt)
+print("the testDataset is contain %d labels" %(len(dataloader)))
 
 model = Pix2PixModel(opt)
 model.eval()

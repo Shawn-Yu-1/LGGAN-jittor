@@ -15,7 +15,6 @@ class Pix2pixDataset(BaseDataset):
         parser.add_argument('--no_pairing_check', action='store_true',
                             help='If specified, skip sanity check of correct label-image file pairing')
         return parser
-
     def initialize(self, opt):
         self.opt = opt
 
