@@ -165,7 +165,7 @@ class Pix2PixTrainer():
         self.update_learning_rate(epoch)
 
     def save(self, epoch):
-        self.pix2pix_model_on_one_gpu.save(epoch)
+        self.pix2pix_model.save(epoch)
 
     ##################################################################
     # Helper functions

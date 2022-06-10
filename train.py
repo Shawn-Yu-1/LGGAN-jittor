@@ -15,20 +15,21 @@ import jittor as jt
 # parse options
 opt = TrainOptions().parse()
 
+# opt.continue_train = True   # if continue train
+
 jt.flags.use_cuda = (jt.has_cuda and opt.gpu_ids != "-1")
 # print options to help debugging
 print(' '.join(sys.argv))
 
 # load the dataset
 dataset = data.create_dataloader(opt)
-
 dataloader = dataset().set_attrs(batch_size=opt.batchSize,
         shuffle=not opt.serial_batches,
         num_workers=int(opt.nThreads),
         drop_last=opt.isTrain)
-
 dataloader.initialize(opt)
 print("the Dataset is contain %d labels" %(len(dataloader)))
+
 # create trainer for our model
 trainer = Pix2PixTrainer(opt)
 
