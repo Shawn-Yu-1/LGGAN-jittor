@@ -6,7 +6,7 @@ Licensed under the CC BY-NC-SA 4.0 license (https://creativecommons.org/licenses
 import os
 from collections import OrderedDict
 
-import torch
+import jittor as jt
 import data
 from options.test_options import TestOptions
 from models.pix2pix_model import Pix2PixModel
@@ -15,7 +15,9 @@ from util import html
 
 opt = TestOptions().parse()
 
-dataloader = data.create_dataloader(opt)
+jt.flags.use_cuda = (jt.has_cuda and opt.gpu_ids != "-1")
+
+dataset = data.create_dataloader(opt)
 dataloader = dataset().set_attrs(batch_size=opt.batchSize,
         shuffle=not opt.serial_batches,
         num_workers=int(opt.nThreads),
@@ -66,20 +68,8 @@ for i, data_i in enumerate(dataloader):
 
                                ('global_image', result_global[b]),
                                ('local_image', result_local[b]),
-                               ('global_attention', 1 - attention_local[b]/torch.max(attention_local[b]).item() ),
-                               ('local_attention', attention_local[b]/torch.max(attention_local[b]).item() ),
-                               # ('label_3_7', label_3_7[b]),
-                               # ('image_3_7', result_7[b]),
-                               # ('label_3_8', label_3_8[b]),
-                               # ('image_3_8', result_8[b]),
-                               # ('label_3_11', label_3_11[b]),
-                               # ('image_3_11', result_11[b]),
-                               # ('label_3_21', label_3_21[b]),
-                               # ('image_3_21', result_21[b]),
-                               # ('label_3_27', label_3_27[b]),
-                               # ('image_3_27', result_27[b]),
-                               # ('label_3_33', label_3_33[b]),
-                               # ('image_3_33', result_33[b]),
+                               ('global_attention', 1 - attention_local[b]/jt.max(attention_local[b]).item() ),
+                               ('local_attention', attention_local[b]/jt.max(attention_local[b]).item() ),
                                ('synthesized_image', generated[b])])
         visualizer.save_images(webpage, visuals, img_path[b:b + 1])
 
