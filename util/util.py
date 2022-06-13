@@ -271,8 +271,8 @@ class Colorize(object):
 
         for label in range(0, len(self.cmap)):
             mask = (label == gray_image[0])
-            color_image[0][mask] = self.cmap[label][0]
-            color_image[1][mask] = self.cmap[label][1]
-            color_image[2][mask] = self.cmap[label][2]
+            color_image[0,mask] = self.cmap[label][0]
+            color_image[1,mask] = self.cmap[label][1]
+            color_image[2,mask] = self.cmap[label][2]
 
         return color_image
